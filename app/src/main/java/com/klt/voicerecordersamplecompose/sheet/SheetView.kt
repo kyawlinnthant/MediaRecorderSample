@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun VoiceRecorderView(
     modifier: Modifier = Modifier,
-    onLongPressListener: () -> Unit,
+    onStartPressed: () -> Unit,
+    onStopPressed: () -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -25,9 +26,8 @@ fun VoiceRecorderView(
         Spacer(modifier = modifier.height(48.dp))
         Divider()
         VoiceRecorderContent(
-            onLongPressListener = {
-
-            }
+            onStartPressed = onStartPressed,
+            onStopPressed = onStopPressed ,
         )
     }
 }
@@ -36,8 +36,9 @@ fun VoiceRecorderView(
 @Preview
 private fun Preview() {
     Surface {
-        VoiceRecorderView {
-
-        }
+        VoiceRecorderView (
+            onStartPressed = {},
+            onStopPressed = {}
+                )
     }
 }

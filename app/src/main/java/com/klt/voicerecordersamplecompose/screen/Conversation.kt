@@ -1,6 +1,8 @@
 package com.klt.voicerecordersamplecompose.screen
 
 import android.Manifest
+import android.media.MediaRecorder
+import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -26,6 +29,7 @@ fun ConversationView(
     modifier: Modifier = Modifier,
 ) {
 
+    val context = LocalContext.current
     val vm: MainViewModel = hiltViewModel()
     val permissionsState =
         rememberMultiplePermissionsState(permissions = listOf(Manifest.permission.RECORD_AUDIO))
@@ -36,6 +40,13 @@ fun ConversationView(
     )
     var message by remember {
         mutableStateOf("")
+    }
+    val recorder : MediaRecorder =  remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            MediaRecorder(context)
+        } else {
+            MediaRecorder()
+        }
     }
 
     LaunchedEffect(key1 = true) {
@@ -62,7 +73,10 @@ fun ConversationView(
     ModalBottomSheetLayout(
         sheetContent = {
             VoiceRecorderView(
-                onLongPressListener = {
+                onStopPressed = {
+
+                },
+                onStartPressed = {
 
                 }
             )
