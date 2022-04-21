@@ -1,8 +1,10 @@
 package com.klt.voicerecordersamplecompose.screen
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.Environment
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +24,8 @@ import com.klt.voicerecordersamplecompose.conversation.InputSection
 import com.klt.voicerecordersamplecompose.sheet.VoiceRecorderView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -41,7 +45,7 @@ fun ConversationView(
     var message by remember {
         mutableStateOf("")
     }
-    val recorder : MediaRecorder =  remember {
+    val recorder: MediaRecorder = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
         } else {
@@ -74,10 +78,52 @@ fun ConversationView(
         sheetContent = {
             VoiceRecorderView(
                 onStopPressed = {
-
+                    recorder.stop()
+                    recorder.reset()
+//                    recorder.release()
                 },
                 onStartPressed = {
 
+
+                    val now = Calendar.getInstance().time
+                    val formatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                    val current = formatter.format(this)
+
+                    val audioFilePath = Environment.getExternalStorageDirectory()
+                        .absolutePath + "/$current.3gp"
+                    //audio format
+                    /*AAC
+                    LC/LTP,
+                    HE-AACv1 (AAC+),
+                    HE-AACv2 (enhanced AAC+),
+                    AMR-NB,
+                    AMR-WB,
+                    MP3,
+                    MIDI,
+                    Ogg Vorbis,
+                    PCM/WAVE*/
+//                    AudioTrack and MediaPlayer can use to play audio. also ExoPlayer
+                    /** we need to check device has MIC availability */
+                    val feature = PackageManager.FEATURE_MICROPHONE
+                    val isEnabledMic = context.packageManager.hasSystemFeature(feature)
+                    if (isEnabledMic) {
+                        try {
+                            recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                            recorder.setOutputFile(audioFilePath)
+                            recorder.prepare()
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        recorder.start()
+
+                    } else {
+                        scope.launch {
+                            scaffoldState.snackbarHostState.showSnackbar("MIC cannot use")
+                        }
+                    }
                 }
             )
 
